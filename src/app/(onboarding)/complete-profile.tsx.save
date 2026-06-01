@@ -1,0 +1,327 @@
+/**
+ * Complete Profile Screen (Onboarding)
+ * Collects username from user during onboarding
+ */
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/button';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
+import { completeOnboarding, isUsernameUsed } from '@/services/firestore-service';
+import { validateUsername } from '@/utils/validation';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+
+export default function CompleteProfileScreen() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ displayName?: string; username?: string }>({});
+
+  if (!user) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  const handleComplete = async () => {
+    try {
+      setError(null);
+      setFieldErrors({});
+
+      const usernameValidation = validateUsername(username);
+
+      if (!usernameValidation.valid) {
+        setFieldErrors({
+          username: usernameValidation.error,
+        });
+        return;
+      }
+
+      setLoading(true);
+
+      const usernameTaken = await isUsernameUsed(username);
+      if (usernameTaken) {
+        setFieldErrors({
+          username: 'This username is already taken',
+        });
+        setLoading(false);
+        return;
+      }
+
+      await completeOnboarding(user.uid, username, displayName);
+
+      router.replace('/(tabs)/home');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to complete setup';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+          <View style={styles.header}>
+            <ThemedText style={styles.title}>Complete Your Profile</ThemedText>
+            <ThemedText style={styles.subtitle}>
+              Set up your username to finish joining Vyra
+            </ThemedText>
+          </View>
+
+          <ErrorMessage message={error} />
+
+          <Input
+            label="Display Name"
+            placeholder="Your full name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            error={fieldErrors.displayName}
+            editable={!loading}
+            autoCapitalize="words"
+          />
+
+          <Input
+            label="Username"
+            placeholder="Choose a unique username"
+            value={username}
+            onChangeText={setUsername}
+            error={fieldErrors.username}
+            editable={!loading}
+            autoCapitalize="none"
+            autoCorrect={false}
+            helperText="3-20 characters, letters, numbers, and underscores only"
+          />
+
+          <ThemedText style={styles.helperText}>
+            3-20 characters, letters, numbers, and underscores only
+          </ThemedText>
+
+          <Button
+            title="Complete Setup"
+            onPress={handleComplete}
+            loading={loading}
+            disabled={!username || !displayName}
+            style={styles.submitButton}
+          />
+
+          <ThemedText style={styles.skipNote}>
+            You can change your display name and username anytime from your profile settings.
+          </ThemedText>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+    lineHeight: 20,
+  },
+  helperText: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginBottom: 20,
+  },
+  submitButton: {
+    marginTop: 8,
+  },
+  skipNote: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 20,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+});
+EOFcat > ~/vyra/src/app/'(onboarding)'/complete-profile.tsx <<'EOF'
+/**
+ * Complete Profile Screen (Onboarding)
+ * Collects username from user during onboarding
+ */
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/button';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
+import { completeOnboarding, isUsernameUsed } from '@/services/firestore-service';
+import { validateUsername } from '@/utils/validation';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+
+export default function CompleteProfileScreen() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ displayName?: string; username?: string }>({});
+
+  if (!user) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  const handleComplete = async () => {
+    try {
+      setError(null);
+      setFieldErrors({});
+
+      const usernameValidation = validateUsername(username);
+
+      if (!usernameValidation.valid) {
+        setFieldErrors({
+          username: usernameValidation.error,
+        });
+        return;
+      }
+
+      setLoading(true);
+
+      const usernameTaken = await isUsernameUsed(username);
+      if (usernameTaken) {
+        setFieldErrors({
+          username: 'This username is already taken',
+        });
+        setLoading(false);
+        return;
+      }
+
+      await completeOnboarding(user.uid, username, displayName);
+
+      router.replace('/(tabs)/home');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to complete setup';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+          <View style={styles.header}>
+            <ThemedText style={styles.title}>Complete Your Profile</ThemedText>
+            <ThemedText style={styles.subtitle}>
+              Set up your username to finish joining Vyra
+            </ThemedText>
+          </View>
+
+          <ErrorMessage message={error} />
+
+          <Input
+            label="Display Name"
+            placeholder="Your full name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            error={fieldErrors.displayName}
+            editable={!loading}
+            autoCapitalize="words"
+          />
+
+          <Input
+            label="Username"
+            placeholder="Choose a unique username"
+            value={username}
+            onChangeText={setUsername}
+            error={fieldErrors.username}
+            editable={!loading}
+            autoCapitalize="none"
+            autoCorrect={false}
+            helperText="3-20 characters, letters, numbers, and underscores only"
+          />
+
+          <ThemedText style={styles.helperText}>
+            3-20 characters, letters, numbers, and underscores only
+          </ThemedText>
+
+          <Button
+            title="Complete Setup"
+            onPress={handleComplete}
+            loading={loading}
+            disabled={!username || !displayName}
+            style={styles.submitButton}
+          />
+
+          <ThemedText style={styles.skipNote}>
+            You can change your display name and username anytime from your profile settings.
+          </ThemedText>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+    lineHeight: 20,
+  },
+  helperText: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginBottom: 20,
+  },
+  submitButton: {
+    marginTop: 8,
+  },
+  skipNote: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 20,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+});

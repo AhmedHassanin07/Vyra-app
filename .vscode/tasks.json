@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install dependencies",
+      "type": "shell",
+      "command": "npm install",
+      "inAgents": true,
+      "runOptions": { "runOn": "worktreeCreated" }
+    },
+    {
+      "label": "Start dev server",
+      "type": "shell",
+      "command": "npm run dev",
+      "inAgents": true
+    },
+    {
+      "label": "Start iOS simulator",
+      "type": "shell",
+      "command": "npm run ios",
+      "inAgents": true
+    },
+    {
+      "label": "Start Android emulator",
+      "type": "shell",
+      "command": "npm run android",
+      "inAgents": true
+    },
+    {
+      "label": "Lint code",
+      "type": "shell",
+      "command": "npm run lint",
+      "inAgents": true
+    }
+  ]
+}
