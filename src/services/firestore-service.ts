@@ -108,6 +108,26 @@ export async function isUsernameUsed(username: string): Promise<boolean> {
 }
 
 /**
+ * Check if a username is available for a specific user
+ * Allows the user to keep their current username
+ * Returns true if username is taken by another user, false if available or owned by current user
+ */
+export async function isUsernameAvailableForUser(username: string, currentUid: string): Promise<boolean> {
+  const normalizedUsername = username.trim().toLowerCase();
+  const usernameRef = doc(db, USERNAMES_COLLECTION, normalizedUsername);
+  const docSnap = await getDoc(usernameRef);
+
+  // Username doesn't exist → available
+  if (!docSnap.exists()) {
+    return true;
+  }
+
+  // Username exists, check if it belongs to current user
+  const data = docSnap.data();
+  return data.uid === currentUid; // true if user can use it, false if taken by another
+}
+
+/**
  * Claim a username for a user during onboarding
  * Creates a document in the usernames collection to reserve the username
  * Normalizes username with trim() and toLowerCase() before claiming

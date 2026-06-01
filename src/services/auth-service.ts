@@ -9,7 +9,7 @@ import {
     User as FirebaseUser,
     sendPasswordResetEmail,
     signInWithEmailAndPassword,
-    signOut,
+    signOut
 } from 'firebase/auth';
 import { auth } from './firebase-config';
 import { createUserDoc, getUserDoc } from './firestore-service';
@@ -90,6 +90,17 @@ export class AuthService {
    */
   static onAuthStateChanged(callback: (firebaseUser: FirebaseUser | null) => void) {
     return auth.onAuthStateChanged(callback);
+  }
+
+  /**
+   * Update Firebase Auth profile displayName
+   */
+  static async updateAuthProfile(displayName: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No authenticated user');
+    }
+    await updateProfile(currentUser, { displayName });
   }
 }
 
